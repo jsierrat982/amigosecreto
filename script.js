@@ -1,11 +1,11 @@
-// 1. Importaciones
+// 1. Importaciones (Añadimos deleteDoc)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { 
     getFirestore, collection, addDoc, onSnapshot, 
-    query, getDocs, writeBatch, doc, orderBy 
+    query, getDocs, writeBatch, doc, orderBy, deleteDoc 
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// 2. TU Configuración (La misma de antes)
+// 2. TU Configuración
 const firebaseConfig = {
     apiKey: "AIzaSyCp1oDgckf6zRWFEUYxsO8CBWBhlTlLZ_4",
     authDomain: "amigosecretoweb-ba6e2.firebaseapp.com",
@@ -21,10 +21,10 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const COL_NAME = "jugadores";
 
-// 4. Variables de Estado Local
+// 4. Variables de Estado
 let myName = "";
 let myId = "";
-let isMyUserAdmin = false; // Nuevo estado para saber si soy admin
+let isMyUserAdmin = false;
 
 // 5. Referencias DOM
 const loginForm = document.getElementById('login-form');
@@ -47,35 +47,33 @@ loginForm.addEventListener('submit', async (e) => {
     const name = usernameInput.value.trim();
     if (!name) return;
 
-    // Deshabilitar botón para evitar doble click
     const submitBtn = loginForm.querySelector('button');
     submitBtn.disabled = true;
     submitBtn.textContent = "Verificando...";
 
     try {
-        // 1. Verificar si soy el primero en entrar (Admin)
+        // Verificar si soy admin (si la sala está vacía)
         const qSnapshot = await getDocs(collection(db, COL_NAME));
-        const amIAdmin = qSnapshot.empty; // True si no hay nadie más
+        const amIAdmin = qSnapshot.empty; 
 
-        // 2. Guardar jugador en Firestore
+        // Guardar jugador
         const docRef = await addDoc(collection(db, COL_NAME), {
             name: name,
             match: null,
-            isAdmin: amIAdmin, // Guardamos el rol
+            isAdmin: amIAdmin,
             timestamp: Date.now()
         });
 
-        // 3. Actualizar estado local
+        // Actualizar estado local
         myName = name;
         myId = docRef.id;
         isMyUserAdmin = amIAdmin;
 
-        // 4. Cambiar pantalla
+        // UI
         loginSection.classList.add('hidden');
         gameSection.classList.remove('hidden');
         userStatus.classList.remove('hidden');
         
-        // Mostrar nombre y etiqueta de admin si corresponde
         currentUsernameSpan.innerHTML = myName;
         if (isMyUserAdmin) {
             const badge = document.createElement('span');
@@ -84,20 +82,18 @@ loginForm.addEventListener('submit', async (e) => {
             currentUsernameSpan.appendChild(badge);
         }
 
-        // 5. Iniciar escucha
         startListening();
 
     } catch (error) {
-        console.error("Error al entrar:", error);
+        console.error("Error:", error);
         alert("Error de conexión.");
         submitBtn.disabled = false;
         submitBtn.textContent = "Entrar a la Sala";
     }
 });
 
-// B. Escuchar cambios en tiempo real
+// B. Escuchar cambios (Renderizado de lista con botón borrar)
 function startListening() {
-    // Ordenamos por fecha para que la lista no salte
     const q = query(collection(db, COL_NAME), orderBy("timestamp"));
 
     onSnapshot(q, (snapshot) => {
@@ -105,107 +101,122 @@ function startListening() {
         const players = [];
         let gameActive = false;
 
-        snapshot.forEach((doc) => {
-            const data = doc.data();
-            players.push({ id: doc.id, ...data });
+        snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            players.push({ id: docSnap.id, ...data });
+            if (data.match) gameActive = true;
 
-            // Renderizar lista con icono de admin
+            // --- CREACIÓN DEL ELEMENTO DE LISTA ---
             const li = document.createElement('li');
-            let content = data.name;
             
-            if (data.isAdmin) content += " 👑"; // Corona para el admin visualmente
+            // 1. Nombre del usuario
+            const nameSpan = document.createElement('span');
+            let content = data.name;
+            if (data.isAdmin) content += " 👑";
             if (data.name === myName) {
                 content += " (Tú)";
                 li.style.fontWeight = "bold";
             }
-            
-            li.textContent = content;
+            nameSpan.textContent = content;
+            li.appendChild(nameSpan);
+
+            // 2. Botón de Eliminar (Solo visible para Admin y si el juego no empezó)
+            // No permitimos que el admin se borre a sí mismo
+            if (isMyUserAdmin && !gameActive && docSnap.id !== myId) {
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = "🗑️";
+                deleteBtn.className = "btn-delete";
+                deleteBtn.title = "Eliminar usuario";
+                
+                // Acción de borrar
+                deleteBtn.onclick = () => deleteUser(docSnap.id, data.name);
+                
+                li.appendChild(deleteBtn);
+            }
+
             participantsList.appendChild(li);
 
-            // Revisar mi resultado
-            if (doc.id === myId && data.match) {
+            // Verificar mi resultado
+            if (docSnap.id === myId && data.match) {
                 showResult(data.match);
-                gameActive = true;
             }
-            if (data.match) gameActive = true;
         });
 
-        // Actualizamos botones según mi rol y el estado del juego
         updateGameControls(players.length, gameActive);
     });
 }
 
-// C. Control de Botones (Lógica Admin)
+// C. Función para eliminar usuario (Nueva)
+async function deleteUser(userId, userName) {
+    if (confirm(`¿Estás seguro de que quieres eliminar a ${userName}?`)) {
+        try {
+            await deleteDoc(doc(db, COL_NAME, userId));
+            // No necesitamos hacer nada más, onSnapshot actualizará la lista solo
+        } catch (error) {
+            console.error("Error al borrar:", error);
+            alert("No se pudo eliminar al usuario.");
+        }
+    }
+}
+
+// D. Control de Botones
 function updateGameControls(count, isPlayed) {
-    
-    // CASO 1: El juego ya terminó
     if (isPlayed) {
-        drawBtn.classList.remove('hidden-force'); // Mostrar para indicar fin
+        drawBtn.classList.remove('hidden-force');
         drawBtn.disabled = true;
         drawBtn.textContent = "¡Sorteo Realizado! 🎁";
         drawBtn.style.backgroundColor = "#ccc";
-        statusText.textContent = "El juego ha terminado. Mira tu resultado.";
+        statusText.textContent = "El juego ha terminado.";
         return;
     }
 
-    // CASO 2: Soy Admin
     if (isMyUserAdmin) {
-        drawBtn.classList.remove('hidden-force'); // El admin SI ve el botón
-        
+        drawBtn.classList.remove('hidden-force');
         if (count >= 3) {
             drawBtn.disabled = false;
             drawBtn.textContent = "🎲 ¡Realizar Sorteo!";
-            statusText.textContent = "Eres el administrador. Tienes el control.";
+            statusText.textContent = "Eres Admin. Puedes eliminar usuarios o iniciar.";
         } else {
             drawBtn.disabled = true;
             drawBtn.textContent = `Esperando jugadores (${count}/3)`;
             statusText.textContent = "Necesitas más gente para iniciar.";
         }
-    } 
-    
-    // CASO 3: Soy un invitado normal
-    else {
-        drawBtn.classList.add('hidden-force'); // Invitado NO ve el botón
-        statusText.textContent = `Esperando a que el administrador inicie (${count} en sala)...`;
+    } else {
+        drawBtn.classList.add('hidden-force');
+        statusText.textContent = `Esperando al admin (${count} en sala)...`;
     }
 }
 
-// D. Algoritmo de Sorteo (Solo el admin puede activarlo)
+// E. Sorteo
 drawBtn.addEventListener('click', async () => {
-    if (!isMyUserAdmin) return; // Doble seguridad
+    if (!isMyUserAdmin) return;
 
     const snapshot = await getDocs(collection(db, COL_NAME));
     let users = [];
     snapshot.forEach(doc => users.push({ id: doc.id, ...doc.data() }));
 
     if (users.length < 3) return alert("Faltan jugadores");
+    if(!confirm("¿Iniciar sorteo? Ya no se podrán eliminar usuarios.")) return;
 
-    if(!confirm("¿Estás seguro de iniciar el sorteo ahora? Nadie más podrá unirse.")) return;
-
-    // Mezclar (Fisher-Yates)
     let shuffled = [...users];
     for (let i = shuffled.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
 
-    // Escritura en lote
     const batch = writeBatch(db);
-
     for (let i = 0; i < users.length; i++) {
         const giver = users[i];
         const receiver = users[(i + 1) % users.length]; 
         const userRef = doc(db, COL_NAME, giver.id);
         batch.update(userRef, { match: receiver.name });
     }
-
     await batch.commit();
 });
 
-// E. Mostrar resultado
+// F. Resultado
 function showResult(matchName) {
     matchNameH2.textContent = matchName;
     myResultDiv.classList.remove('hidden');
-    // Si soy admin, oculto mi botón de sortear porque ya acabó
     if(isMyUserAdmin) drawBtn.classList.add('hidden-force');
 }
