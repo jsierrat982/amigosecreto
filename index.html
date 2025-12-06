@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amigo Secreto 🎄</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="main-header">
+        <h1>🎅 Amigo Secreto Web</h1>
+        <div id="user-status" class="hidden">
+            Hola, <strong id="current-username"></strong>
+        </div>
+    </header>
+
+    <main class="container">
+        
+        <section id="login-section" class="card">
+            <h2>🎄 ¡Únete al Sorteo!</h2>
+            <p>Ingresa tu nombre para participar.</p>
+            <form id="login-form">
+                <input type="text" id="username-input" placeholder="Tu nombre aquí..." required autocomplete="off">
+                <button type="submit" class="btn primary">Entrar a la Sala</button>
+            </form>
+        </section>
+
+        <section id="game-section" class="card hidden">
+            <div class="game-layout">
+                <article class="list-container">
+                    <h3>👥 Participantes en la sala</h3>
+                    <ul id="participants-list">
+                        </ul>
+                    <p class="status-text" id="status-text">Esperando jugadores...</p>
+                </article>
+
+                <article class="result-container">
+                    <div class="gift-icon">🎁</div>
+                    <button id="draw-btn" class="btn action" disabled>Esperando...</button>
+                    
+                    <div id="my-result" class="result-box hidden">
+                        <p>Te toca regalarle a:</p>
+                        <h2 id="match-name">???</h2>
+                        <p class="shhh">🤫 ¡Es un secreto!</p>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="main-footer">
+        <p>Desarrollado para Navidad 2023 ❄️</p>
+    </footer>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
