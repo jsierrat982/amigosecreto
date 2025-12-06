@@ -1,3 +1,30 @@
+/* --- Modificación en style.css --- */
+
+/* Hacemos que cada fila de la lista sea flexible */
+li {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    display: flex; /* Nuevo: para alinear items */
+    justify-content: space-between; /* Nombre a la izq, botón a la der */
+    align-items: center;
+}
+
+/* Estilo para el botón de eliminar */
+.btn-delete {
+    background-color: #ffeba1; /* Amarillo suave alerta */
+    border: 1px solid #ffca28;
+    color: #d32f2f;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.btn-delete:hover {
+    background-color: #ffc107;
+    color: black;
+}
 :root {
     --red: #d42426;
     --green: #2e8b57;
@@ -119,3 +146,4 @@ li { padding: 8px; border-bottom: 1px solid #eee; }
 .hidden-force {
     display: none !important;
 }
+
