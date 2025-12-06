@@ -1,149 +1,281 @@
-/* --- Modificación en style.css --- */
+/* --- 1. Importación de Fuente Moderna (Outfit) --- */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
 
-/* Hacemos que cada fila de la lista sea flexible */
-li {
-    padding: 10px;
-    border-bottom: 1px solid #eee;
-    display: flex; /* Nuevo: para alinear items */
-    justify-content: space-between; /* Nombre a la izq, botón a la der */
+:root {
+    /* Paleta Moderna "Vibrant Holiday" */
+    --primary-gradient: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+    --bg-gradient: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); /* Azul profundo elegante */
+    --glass-bg: rgba(255, 255, 255, 0.95);
+    --glass-border: rgba(255, 255, 255, 0.5);
+    --text-main: #2d3436;
+    --text-light: #636e72;
+    --success: #00b894;
+    --danger: #ff7675;
+    --radius-lg: 24px;
+    --radius-sm: 12px;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Outfit', sans-serif; /* Tipografía limpia */
+    background: var(--bg-gradient);
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
     align-items: center;
 }
 
-/* Estilo para el botón de eliminar */
-.btn-delete {
-    background-color: #ffeba1; /* Amarillo suave alerta */
-    border: 1px solid #ffca28;
-    color: #d32f2f;
-    border-radius: 4px;
-    padding: 4px 8px;
-    font-size: 0.8rem;
-    cursor: pointer;
-    margin-left: 10px;
-}
-
-.btn-delete:hover {
-    background-color: #ffc107;
-    color: black;
-}
-:root {
-    --red: #d42426;
-    --green: #2e8b57;
-    --gold: #f0c419;
-    --bg: #f4f7f6;
-    --white: #ffffff;
-    --text: #333333;
-}
-
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-
-body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
-
+/* --- Header Flotante --- */
 .main-header {
-    background: var(--red);
-    color: var(--white);
-    padding: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px); /* Efecto vidrio */
+    width: 100%;
+    padding: 1.5rem 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    color: white;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
+.main-header h1 {
+    font-weight: 800;
+    font-size: 1.5rem;
+    letter-spacing: -0.5px;
+}
+
+.admin-badge {
+    background: #fab1a0;
+    color: #d63031;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+/* --- Contenedor Principal --- */
 .container {
-    max-width: 900px;
-    margin: 2rem auto;
-    width: 95%;
+    width: 90%;
+    max-width: 1000px;
+    margin: 3rem auto;
     flex: 1;
+    animation: fadeIn 0.6s ease-out;
 }
 
+/* --- Tarjetas (Cards) Modernas --- */
 .card {
-    background: var(--white);
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    background: var(--glass-bg);
+    padding: 3rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
     text-align: center;
+    border: 1px solid var(--glass-border);
+    transition: transform 0.3s ease;
 }
 
-/* Formularios */
-input {
-    padding: 12px;
-    border: 2px solid #ddd;
-    border-radius: 6px;
+.card h2 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent; /* Texto con gradiente */
+}
+
+/* --- Inputs Modernos --- */
+input[type="text"] {
+    padding: 15px 20px;
+    border: 2px solid transparent;
+    background-color: #f1f2f6;
+    border-radius: var(--radius-sm);
     width: 100%;
-    max-width: 300px;
-    margin: 1rem 0;
+    max-width: 350px;
+    margin: 1.5rem 0;
     font-size: 1rem;
+    font-family: inherit;
+    transition: all 0.3s ease;
 }
 
-/* Botones */
+input[type="text"]:focus {
+    background-color: white;
+    border-color: #ff4b2b;
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(255, 75, 43, 0.1);
+}
+
+/* --- Botones con Gradiente --- */
 .btn {
-    padding: 12px 24px;
+    padding: 15px 35px;
     border: none;
-    border-radius: 6px;
+    border-radius: 50px; /* Botones redondos tipo "Pill" */
     cursor: pointer;
     font-size: 1rem;
-    font-weight: bold;
-    transition: transform 0.1s;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.btn.primary { background-color: var(--green); color: white; }
-.btn.action { background-color: var(--gold); color: #444; width: 100%; }
-.btn:disabled { background-color: #ccc; cursor: not-allowed; }
-.btn:active { transform: scale(0.98); }
 
-/* Layout del Juego */
+.btn.primary {
+    background: var(--primary-gradient);
+    color: white;
+    box-shadow: 0 10px 20px rgba(255, 75, 43, 0.3);
+}
+
+.btn.primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 25px rgba(255, 75, 43, 0.4);
+}
+
+.btn.action {
+    background: var(--text-main);
+    color: white;
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.btn:disabled {
+    background: #dfe6e9;
+    color: #b2bec3;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+/* --- Layout del Juego --- */
 .game-layout {
     display: grid;
     gap: 2rem;
 }
 
 @media (min-width: 768px) {
-    .game-layout { grid-template-columns: 1fr 1fr; text-align: left; }
+    .game-layout { 
+        grid-template-columns: 1.2fr 0.8fr; 
+        text-align: left; 
+    }
 }
 
-ul { list-style: none; margin-top: 1rem; text-align: left; }
-li { padding: 8px; border-bottom: 1px solid #eee; }
+/* --- Lista de Participantes (Estilo "Floating Cards") --- */
+ul { 
+    list-style: none; 
+    margin-top: 1.5rem; 
+    text-align: left; 
+}
 
+li { 
+    background: white;
+    margin-bottom: 10px;
+    padding: 15px 20px;
+    border-radius: var(--radius-sm);
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: transform 0.2s;
+}
+
+li:hover {
+    transform: translateX(5px);
+}
+
+/* Botón Eliminar Moderno */
+.btn-delete {
+    background: transparent;
+    border: none;
+    color: var(--text-light);
+    font-size: 1.2rem;
+    padding: 5px;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-delete:hover {
+    background-color: #ffeaa7;
+    color: #d63031;
+    transform: scale(1.1);
+}
+
+/* --- Resultado --- */
 .result-container {
-    background: #fff8e1; /* Fondo dorado suave */
-    padding: 1.5rem;
-    border-radius: 8px;
+    background: linear-gradient(135deg, #fff 0%, #f7f1e3 100%);
+    padding: 2rem;
+    border-radius: var(--radius-lg);
     text-align: center;
-    border: 2px dashed var(--gold);
+    border: none;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
 }
 
-.gift-icon { font-size: 3rem; margin-bottom: 1rem; }
+/* Decoración de fondo para el resultado */
+.result-container::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 100px;
+    height: 100px;
+    background: var(--success);
+    border-radius: 50%;
+    opacity: 0.1;
+}
+
+.gift-icon { font-size: 4rem; margin-bottom: 1rem; animation: float 3s ease-in-out infinite; }
 
 .result-box {
-    margin-top: 1rem;
+    margin-top: 1.5rem;
     background: white;
-    padding: 1rem;
-    border-radius: 8px;
-    animation: popIn 0.5s ease;
+    padding: 1.5rem;
+    border-radius: var(--radius-sm);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.result-box h2 { color: var(--red); font-size: 1.8rem; margin: 10px 0; }
-.shhh { font-size: 0.8rem; color: #666; font-style: italic; }
+.result-box h2 {
+    font-size: 2.5rem;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
 
-/* Utilidades */
-.hidden { display: none !important; }
+/* --- Footer --- */
+.main-footer {
+    padding: 2rem;
+    color: rgba(255,255,255,0.7);
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+/* Utilidades y Animaciones */
+.hidden, .hidden-force { display: none !important; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 
 @keyframes popIn {
-    from { transform: scale(0.8); opacity: 0; }
+    from { transform: scale(0.5); opacity: 0; }
     to { transform: scale(1); opacity: 1; }
-
-}
-/* --- Agrega esto al final de style.css --- */
-
-.admin-badge {
-    background-color: var(--gold);
-    color: #333;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: bold;
-    margin-left: 8px;
-    vertical-align: middle;
 }
 
-.hidden-force {
-    display: none !important;
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
 }
-
