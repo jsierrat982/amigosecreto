@@ -101,4 +101,21 @@ li { padding: 8px; border-bottom: 1px solid #eee; }
 @keyframes popIn {
     from { transform: scale(0.8); opacity: 0; }
     to { transform: scale(1); opacity: 1; }
+
+}
+/* --- Agrega esto al final de style.css --- */
+
+.admin-badge {
+    background-color: var(--gold);
+    color: #333;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+.hidden-force {
+    display: none !important;
 }
