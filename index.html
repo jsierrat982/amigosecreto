@@ -1,60 +1,133 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Amigo Secreto 🎄</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SaludVital - Centro Médico Integral</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-    <header class="main-header">
-        <h1>🎅 Amigo Secreto Navideño</h1>
-        <div id="user-status" class="hidden">
-            Hola, <strong id="current-username"></strong>
+  <!-- Encabezado Semántico -->
+  <header class="header">
+    <div class="container header__container">
+      <a href="#" class="logo" aria-label="Ir al inicio de SaludVital">
+        <span class="logo__icon" aria-hidden="true">✚</span> SaludVital
+      </a>
+      
+      <button class="nav-toggle" aria-label="Abrir menú de navegación" aria-expanded="false" id="navToggle">
+        <span class="hamburger"></span>
+      </button>
+
+      <nav class="nav" id="mainNav" aria-label="Navegación principal">
+        <ul class="nav__list">
+          <li><a href="#inicio" class="nav__link">Inicio</a></li>
+          <li><a href="#servicios" class="nav__link">Especialidades</a></li>
+          <li><a href="#consejo" class="nav__link">Consejo del Día</a></li>
+          <li><a href="#contacto" class="nav__link nav__link--cta">Agendar Cita</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Sección Hero -->
+    <section id="inicio" class="hero">
+      <div class="container hero__container">
+        <div class="hero__content">
+          <h1>Tu salud en las mejores manos</h1>
+          <p>Atención médica especializada, tecnología de vanguardia y un equipo dedicado a tu bienestar integral.</p>
+          <a href="#contacto" class="btn btn--primary">Reservar Cita Médica</a>
         </div>
-    </header>
+      </div>
+    </section>
 
-    <main class="container">
+    <!-- Sección de Servicios con Filtro Dinámico -->
+    <section id="servicios" class="services">
+      <div class="container">
+        <h2 class="section-title">Nuestras Especialidades</h2>
         
-        <section id="login-section" class="card">
-            <h2>🎄 ¡Únete al Sorteo!</h2>
-            <p>Ingresa tu nombre para participar.</p>
-            <form id="login-form">
-                <input type="text" id="username-input" placeholder="Tu nombre aquí..." required autocomplete="off">
-                <button type="submit" class="btn primary">Entrar a la Sala</button>
-            </form>
-        </section>
+        <div class="services__filters" role="tablist" aria-label="Filtro de especialidades médicas">
+          <button class="filter-btn active" data-filter="todos" role="tab" aria-selected="true">Todas</button>
+          <button class="filter-btn" data-filter="general" role="tab">Medicina General</button>
+          <button class="filter-btn" data-filter="pediatria" role="tab">Pediatría</button>
+          <button class="filter-btn" data-filter="cardiologia" role="tab">Cardiología</button>
+        </div>
 
-        <section id="game-section" class="card hidden">
-            <div class="game-layout">
-                <article class="list-container">
-                    <h3>👥 Participantes en la sala</h3>
-                    <ul id="participants-list">
-                        </ul>
-                    <p class="status-text" id="status-text">Esperando jugadores...</p>
-                </article>
-
-                <article class="result-container">
-                    <div class="gift-icon">🎁</div>
-                    <button id="draw-btn" class="btn action" disabled>Esperando...</button>
-                    
-                    <div id="my-result" class="result-box hidden">
-                        <p>Te toca regalarle a:</p>
-                        <h2 id="match-name">???</h2>
-                        <p class="shhh">🤫 ¡Es un secreto!</p>
-                    </div>
-                </article>
+        <div class="services__grid" id="servicesGrid">
+          <article class="card" data-category="general">
+            <img src="https://via.placeholder.com/400x250?text=Medicina+General" alt="Doctor realizando una revisión general a un paciente" class="card__img">
+            <div class="card__body">
+              <h3>Medicina General</h3>
+              <p>Evaluaciones preventivas y diagnóstico integral para el cuidado de toda tu familia.</p>
             </div>
-        </section>
+          </article>
 
-    </main>
+          <article class="card" data-category="pediatria">
+            <img src="https://via.placeholder.com/400x250?text=Pediatria" alt="Médico pediatra atendiendo a un niño" class="card__img">
+            <div class="card__body">
+              <h3>Pediatría</h3>
+              <p>Atención médica humana y especializada durante el crecimiento y desarrollo infantil.</p>
+            </div>
+          </article>
 
-    <footer class="main-footer">
-        <p>Desarrollado para Navidad 2025 - Julian Sierra ❄️</p>
-    </footer>
+          <article class="card" data-category="cardiologia">
+            <img src="https://via.placeholder.com/400x250?text=Cardiologia" alt="Especialista analizando estudios del corazón" class="card__img">
+            <div class="card__body">
+              <h3>Cardiología</h3>
+              <p>Prevención, diagnóstico y tratamiento de enfermedades cardiovasculares con alta precisión.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
 
-    <script type="module" src="script.js"></script>
+    <!-- Sección Interactiva: Consejo Médico del Día -->
+    <section id="consejo" class="health-tip">
+      <div class="container">
+        <div class="tip-box">
+          <h2 class="section-title">Consejo de Salud del Día</h2>
+          <blockquote id="tipText" class="tip-box__text">Cargando recomendación médica...</blockquote>
+          <button id="btnNewTip" class="btn btn--secondary">Obtener otro consejo</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Formulario Dinámico de Citas -->
+    <section id="contacto" class="appointment">
+      <div class="container">
+        <h2 class="section-title">Solicitar Cita Médica</h2>
+        <form id="appointmentForm" class="form" novalidate>
+          <div class="form__group">
+            <label for="nombre">Nombre Completo</label>
+            <input type="text" id="nombre" name="nombre" required aria-required="true">
+          </div>
+          <div class="form__group">
+            <label for="email">Correo Electrónico</label>
+            <input type="email" id="email" name="email" required aria-required="true">
+          </div>
+          <div class="form__group">
+            <label for="especialidad">Especialidad Médica</label>
+            <select id="especialidad" name="especialidad" required aria-required="true">
+              <option value="">Selecciona una opción</option>
+              <option value="general">Medicina General</option>
+              <option value="pediatria">Pediatría</option>
+              <option value="cardiologia">Cardiología</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn--primary btn--block">Confirmar Solicitud</button>
+          <div id="formFeedback" class="form__feedback" aria-live="polite"></div>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2026 SaludVital. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
 </body>
-
 </html>
