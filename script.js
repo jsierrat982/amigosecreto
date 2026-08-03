@@ -1,222 +1,131 @@
-// 1. Importaciones (Añadimos deleteDoc)
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { 
-    getFirestore, collection, addDoc, onSnapshot, 
-    query, getDocs, writeBatch, doc, orderBy, deleteDoc 
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+/**
+ * SaludVital - Lógica Frontend Dinámica
+ */
 
-// 2. TU Configuración
-const firebaseConfig = {
-    apiKey: "AIzaSyCp1oDgckf6zRWFEUYxsO8CBWBhlTlLZ_4",
-    authDomain: "amigosecretoweb-ba6e2.firebaseapp.com",
-    projectId: "amigosecretoweb-ba6e2",
-    storageBucket: "amigosecretoweb-ba6e2.firebasestorage.app",
-    messagingSenderId: "552672568454",
-    appId: "1:552672568454:web:91ec514af15ffcfb209d07",
-    measurementId: "G-JW8KLZ8ZF9"
+document.addEventListener('DOMContentLoaded', () => {
+  initNavigation();
+  initServiceFilters();
+  initHealthTipGenerator();
+  initAppointmentForm();
+});
+
+/* ==========================================================================
+   1. Menú Responsive Interactiva con Accesibilidad
+   ========================================================================== */
+const initNavigation = () => {
+  const navToggle = document.getElementById('navToggle');
+  const mainNav = document.getElementById('mainNav');
+
+  if (!navToggle || !mainNav) return;
+
+  navToggle.addEventListener('click', () => {
+    const isExpanded = navToggle.getAttribute('aria-expanded') === 'true';
+    navToggle.setAttribute('aria-expanded', !isExpanded);
+    mainNav.classList.toggle('is-active');
+  });
 };
 
-// 3. Inicializar Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const COL_NAME = "jugadores";
+/* ==========================================================================
+   2. Filtrado Dinámico de Especialidades
+   ========================================================================== */
+const initServiceFilters = () => {
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  const cards = document.querySelectorAll('.card');
 
-// 4. Variables de Estado
-let myName = "";
-let myId = "";
-let isMyUserAdmin = false;
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      // Remover clase activa previa
+      filterBtns.forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+      });
 
-// 5. Referencias DOM
-const loginForm = document.getElementById('login-form');
-const usernameInput = document.getElementById('username-input');
-const loginSection = document.getElementById('login-section');
-const gameSection = document.getElementById('game-section');
-const userStatus = document.getElementById('user-status');
-const currentUsernameSpan = document.getElementById('current-username');
-const participantsList = document.getElementById('participants-list');
-const drawBtn = document.getElementById('draw-btn');
-const myResultDiv = document.getElementById('my-result');
-const matchNameH2 = document.getElementById('match-name');
-const statusText = document.getElementById('status-text');
+      // Activar botón pulsado
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
 
-// --- LÓGICA DEL JUEGO ---
+      const filterValue = btn.getAttribute('data-filter');
 
-// A. Ingresar a la sala
-loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const name = usernameInput.value.trim();
-    if (!name) return;
-
-    const submitBtn = loginForm.querySelector('button');
-    submitBtn.disabled = true;
-    submitBtn.textContent = "Verificando...";
-
-    try {
-        // Verificar si soy admin (si la sala está vacía)
-        const qSnapshot = await getDocs(collection(db, COL_NAME));
-        const amIAdmin = qSnapshot.empty; 
-
-        // Guardar jugador
-        const docRef = await addDoc(collection(db, COL_NAME), {
-            name: name,
-            match: null,
-            isAdmin: amIAdmin,
-            timestamp: Date.now()
-        });
-
-        // Actualizar estado local
-        myName = name;
-        myId = docRef.id;
-        isMyUserAdmin = amIAdmin;
-
-        // UI
-        loginSection.classList.add('hidden');
-        gameSection.classList.remove('hidden');
-        userStatus.classList.remove('hidden');
-        
-        currentUsernameSpan.innerHTML = myName;
-        if (isMyUserAdmin) {
-            const badge = document.createElement('span');
-            badge.className = 'admin-badge';
-            badge.textContent = 'ADMIN';
-            currentUsernameSpan.appendChild(badge);
-        }
-
-        startListening();
-
-    } catch (error) {
-        console.error("Error:", error);
-        alert("Error de conexión.");
-        submitBtn.disabled = false;
-        submitBtn.textContent = "Entrar a la Sala";
-    }
-});
-
-// B. Escuchar cambios (Renderizado de lista con botón borrar)
-function startListening() {
-    const q = query(collection(db, COL_NAME), orderBy("timestamp"));
-
-    onSnapshot(q, (snapshot) => {
-        participantsList.innerHTML = "";
-        const players = [];
-        let gameActive = false;
-
-        snapshot.forEach((docSnap) => {
-            const data = docSnap.data();
-            players.push({ id: docSnap.id, ...data });
-            if (data.match) gameActive = true;
-
-            // --- CREACIÓN DEL ELEMENTO DE LISTA ---
-            const li = document.createElement('li');
-            
-            // 1. Nombre del usuario
-            const nameSpan = document.createElement('span');
-            let content = data.name;
-            if (data.isAdmin) content += " 👑";
-            if (data.name === myName) {
-                content += " (Tú)";
-                li.style.fontWeight = "bold";
-            }
-            nameSpan.textContent = content;
-            li.appendChild(nameSpan);
-
-            // 2. Botón de Eliminar (Solo visible para Admin y si el juego no empezó)
-            // No permitimos que el admin se borre a sí mismo
-            if (isMyUserAdmin && !gameActive && docSnap.id !== myId) {
-                const deleteBtn = document.createElement('button');
-                deleteBtn.textContent = "🗑️";
-                deleteBtn.className = "btn-delete";
-                deleteBtn.title = "Eliminar usuario";
-                
-                // Acción de borrar
-                deleteBtn.onclick = () => deleteUser(docSnap.id, data.name);
-                
-                li.appendChild(deleteBtn);
-            }
-
-            participantsList.appendChild(li);
-
-            // Verificar mi resultado
-            if (docSnap.id === myId && data.match) {
-                showResult(data.match);
-            }
-        });
-
-        updateGameControls(players.length, gameActive);
-    });
-}
-
-// C. Función para eliminar usuario (Nueva)
-async function deleteUser(userId, userName) {
-    if (confirm(`¿Estás seguro de que quieres eliminar a ${userName}?`)) {
-        try {
-            await deleteDoc(doc(db, COL_NAME, userId));
-            // No necesitamos hacer nada más, onSnapshot actualizará la lista solo
-        } catch (error) {
-            console.error("Error al borrar:", error);
-            alert("No se pudo eliminar al usuario.");
-        }
-    }
-}
-
-// D. Control de Botones
-function updateGameControls(count, isPlayed) {
-    if (isPlayed) {
-        drawBtn.classList.remove('hidden-force');
-        drawBtn.disabled = true;
-        drawBtn.textContent = "¡Sorteo Realizado! 🎁";
-        drawBtn.style.backgroundColor = "#ccc";
-        statusText.textContent = "El juego ha terminado.";
-        return;
-    }
-
-    if (isMyUserAdmin) {
-        drawBtn.classList.remove('hidden-force');
-        if (count >= 3) {
-            drawBtn.disabled = false;
-            drawBtn.textContent = "🎲 ¡Realizar Sorteo!";
-            statusText.textContent = "Eres Admin. Puedes eliminar usuarios o iniciar.";
+      // Filtrar tarjetero
+      cards.forEach(card => {
+        const category = card.getAttribute('data-category');
+        if (filterValue === 'todos' || filterValue === category) {
+          card.style.display = 'block';
         } else {
-            drawBtn.disabled = true;
-            drawBtn.textContent = `Esperando jugadores (${count}/3)`;
-            statusText.textContent = "Necesitas más gente para iniciar.";
+          card.style.display = 'none';
         }
-    } else {
-        drawBtn.classList.add('hidden-force');
-        statusText.textContent = `Esperando al admin (${count} en sala)...`;
+      });
+    });
+  });
+};
+
+/* ==========================================================================
+   3. Consumo Asíncrono de Consejos de Salud (Simulación de API)
+   ========================================================================== */
+const healthTips = [
+  "Bebe al menos 2 litros de agua al día para mantener tus órganos hidratados.",
+  "Realiza al menos 30 minutos de actividad física moderada diariamente.",
+  "Duerme entre 7 y 8 horas continuas para favorecer la recuperación celular.",
+  "Prioriza alimentos frescos, vegetales y frutas en tu dieta diaria.",
+  "Haz pausas activas cada 45 minutos si trabajas frente a un computador."
+];
+
+const fetchRandomTip = async () => {
+  // Simulación de retraso de red (Promesa)
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const index = Math.floor(Math.random() * healthTips.length);
+      resolve(healthTips[index]);
+    }, 400);
+  });
+};
+
+const initHealthTipGenerator = () => {
+  const tipText = document.getElementById('tipText');
+  const btnNewTip = document.getElementById('btnNewTip');
+
+  const updateTip = async () => {
+    try {
+      tipText.textContent = "Obteniendo recomendación...";
+      const tip = await fetchRandomTip();
+      tipText.textContent = `"${tip}"`;
+    } catch (error) {
+      tipText.textContent = "No se pudo cargar el consejo en este momento.";
+      console.error("Error al obtener el consejo:", error);
     }
-}
+  };
 
-// E. Sorteo
-drawBtn.addEventListener('click', async () => {
-    if (!isMyUserAdmin) return;
+  btnNewTip.addEventListener('click', updateTip);
+  updateTip(); // Cargar uno al iniciar
+};
 
-    const snapshot = await getDocs(collection(db, COL_NAME));
-    let users = [];
-    snapshot.forEach(doc => users.push({ id: doc.id, ...doc.data() }));
+/* ==========================================================================
+   4. Manejo y Validación de Formulario de Citas
+   ========================================================================== */
+const initAppointmentForm = () => {
+  const form = document.getElementById('appointmentForm');
+  const feedback = document.getElementById('formFeedback');
 
-    if (users.length < 3) return alert("Faltan jugadores");
-    if(!confirm("¿Iniciar sorteo? Ya no se podrán eliminar usuarios.")) return;
+  if (!form) return;
 
-    let shuffled = [...users];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const nombre = document.getElementById('nombre').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const especialidad = document.getElementById('especialidad').value;
+
+    // Validación básica Frontend
+    if (!nombre || !email || !especialidad) {
+      feedback.style.color = 'var(--color-accent)';
+      feedback.textContent = 'Por favor, completa todos los campos requeridos.';
+      return;
     }
 
-    const batch = writeBatch(db);
-    for (let i = 0; i < users.length; i++) {
-        const giver = users[i];
-        const receiver = users[(i + 1) % users.length]; 
-        const userRef = doc(db, COL_NAME, giver.id);
-        batch.update(userRef, { match: receiver.name });
-    }
-    await batch.commit();
-});
-
-// F. Resultado
-function showResult(matchName) {
-    matchNameH2.textContent = matchName;
-    myResultDiv.classList.remove('hidden');
-    if(isMyUserAdmin) drawBtn.classList.add('hidden-force');
-}
+    // Simular envío exitoso
+    feedback.style.color = 'var(--color-primary-dark)';
+    feedback.textContent = `¡Gracias ${nombre}! Tu solicitud para ${especialidad} ha sido registrada.`;
+    
+    form.reset();
+  });
+};
